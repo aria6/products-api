@@ -3,7 +3,7 @@ import {createServer} from 'http';
 import createRouter from './helpers/createRouter';
 import parseRequestBody from './helpers/parseRequestBody';
 
-import {createReadStream} from 'fs';
+import {createReadStream, writeFile} from 'fs';
 
 const PORT_NUM = 8000;
 
@@ -15,16 +15,19 @@ let products = [
     name: 'Pisang',
     desc: 'Pisang is healty fruit',
     price: '2000',
+    imagePath: 'pisang.jpg',
   }, {
     id: '112',
     name: 'Jeruk',
     desc: 'Jeruk is healty fruit',
     price: '3000',
+    imagePath: 'jeruk.jpg',
   }, {
     id: '113',
     name: 'Apel',
     desc: 'Apel is healty fruit',
     price: '4000',
+    imagePath: 'apel.jpg',
   },
 ];
 
@@ -38,20 +41,26 @@ server.on('request', (request, response) => {
   response.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS,POST,PUT,DELETE');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  router.addRoute('/image', () => {
-    response.setHeader('Content-Type', 'image/png');
-    let readStream = createReadStream('./doflaminggo_icon.png');
+  router.addRoute('/images/:nameImg', (nameImg) => {
+    if (!nameImg) {
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({success: false, errorMessage: 'Image not exist..'}) + '\n');
+    }
+    response.setHeader('Content-Type', 'image/jpg');
+    let readStream = createReadStream(`./images/${nameImg}`);
 
-    readStream.on('open', () => {
-      readStream.pipe(response);
-    });
-
-    // readStream.on('data', (chunk: Buffer) => {
-    //   response.write(chunk, (error) => {
-    //     console.error(error);
-    //   });
-    //   response.end();
+    // readStream.on('open', () => {
+    //   readStream.pipe(response);
+    //   // console.log(readStream.pipe(response));
     // });
+
+    readStream.on('data', (chunk: Buffer) => {
+      response.write(chunk, (error) => {
+        if (error) {
+          console.error(error);
+        }
+      });
+    });
 
     readStream.on('error', (error) => {
       response.end(error);
@@ -75,15 +84,26 @@ server.on('request', (request, response) => {
         response.end(JSON.stringify({success: false, errorMessage: error.message}) + '\n');
       }
       if (data) {
-        console.log(data);
         products.push(
           {
             id: Math.random().toString().slice(-3),
             name: data.name,
             desc: data.desc,
             price: data.price,
+            imagePath: data.imagePath,
+            // imageBase64: data.imageBase64,
           }
         );
+
+        if (data.imagePath && data.imageBase64) {
+          let dataImage = data.imageBase64.replace(/^data:image\/\w+;base64,/, '');
+          writeFile(`images/${data.imagePath}`, dataImage, {encoding: 'base64'}, (error) => {
+            if (error) {
+              console.error(error);
+            }
+          });
+        }
+
         response.setHeader('Content-Type', 'application/json');
         response.end(JSON.stringify({success: true}) + '\n');
       }
