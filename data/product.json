@@ -1,0 +1,23 @@
+{
+  "products": [
+    {
+      "id": "111",
+      "name": "Pisang",
+      "desc": "Pisang is healty fruit",
+      "price": "2000",
+      "imagePath": "pisang.jpg"
+    }, {
+      "id": "112",
+      "name": "Jeruk",
+      "desc": "Jeruk is healty fruit",
+      "price": "3000",
+      "imagePath": "jeruk.jpg"
+    }, {
+      "id": "113",
+      "name": "Apel",
+      "desc": "Apel is healty fruit",
+      "price": "4000",
+      "imagePath": "apel.jpg"
+    }
+  ]
+}
